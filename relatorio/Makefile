@@ -1,10 +1,9 @@
-# Compilação do relatório LaTeX
-# Requer: texlive-core + mathpazo (Palatino)
+# Compilação da apresentação 16:9 — Desafio Quant AI
 # Compilar: make ou pdflatex → pdflatex (duas passagens para referências)
 
-TEX = main.tex
-AUX = main
-PDF = main.pdf
+TEX = apresentacao.tex
+AUX = apresentacao
+PDF = apresentacao.pdf
 
 .PHONY: all clean view
 

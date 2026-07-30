@@ -1,0 +1,293 @@
+% =============================================================================
+%  HEATGUARD — Derivativos Climáticos para Hedge de Produtividade da Soja
+%  Apresentação 16:9 · 5 slides · Desafio Quant AI
+% =============================================================================
+\documentclass[aspectratio=169]{beamer}
+
+% Tema minimalista
+\usetheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamercolor{footline}{fg=gray!60}
+\setbeamercolor{frametitle}{fg=black}
+\setbeamersize{text margin left=0.8cm, text margin right=0.8cm}
+
+% Pacotes
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{tikz}
+
+% Cores HEATGUARD
+\definecolor{HGAzul}{HTML}{003057}
+\definecolor{HGVerde}{HTML}{2E8B57}
+\definecolor{HGLaranja}{HTML}{E8751A}
+\definecolor{HGCinza}{HTML}{8C8C8C}
+\definecolor{HGBege}{HTML}{F5F0EB}
+
+% Comandos
+\newcommand{\heatguard}{\textbf{\textcolor{HGLaranja}{HEAT}\textcolor{HGAzul}{GUARD}}}
+\newcommand{\destaque}[1]{\textcolor{HGAzul}{\textbf{#1}}}
+\newcommand{\positivo}[1]{\textcolor{HGVerde}{\textbf{#1}}}
+\newcommand{\alerta}[1]{\textcolor{HGLaranja}{\textbf{#1}}}
+
+% Capa
+\title{\heatguard}
+\subtitle{Derivativos Climáticos para Hedge de Produtividade da Soja}
+\date{}
+\author{}
+
+\begin{document}
+
+% ============================================================================
+% SLIDE 1 — CAPA + ROBÔ + PROBLEMA
+%   Critérios: Conceito (20%), Robô (5%)
+% ============================================================================
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[HGAzul] (current page.north west) rectangle (current page.south east);
+    \fill[HGVerde!85] (current page.south west) rectangle ++(0.3\paperwidth, 0.08\paperheight);
+  \end{tikzpicture}
+
+  \vspace{1cm}
+  \begin{columns}
+    \column{0.45\textwidth}
+      \begin{center}
+        \includegraphics[width=0.85\textwidth]{grafico/heatguard_logo.png}
+      \end{center}
+    \column{0.55\textwidth}
+      \color{white}
+      \Huge \textbf{\heatguard} \\[0.3cm]
+      \large Protegendo a safra brasileira do estresse térmico \\[0.6cm]
+      \small
+      \textbf{Problema:} O produtor de soja brasileiro enfrenta perdas
+      recorrentes por estresse térmico sem instrumentos adequados de hedge. \\[0.2cm]
+      \textbf{Solução:} Opções CDD (*Cooling Degree Days*) — derivativo
+      climático que compensa financeiramente o produtor quando o calor
+      excessivo reduz a produtividade.
+  \end{columns}
+
+  \vfill
+  \color{white!70}
+  \begin{columns}
+    \column{0.5\textwidth}
+      \tiny
+      \textbf{HEATGUARD:} HEAT (calor) + GUARD (proteção).\\
+      Derivativo climático para hedge de temperatura na soja.
+    \column{0.5\textwidth}
+      \tiny
+      Desafio Quant AI · Julho 2026
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+% SLIDE 2 — MODELAGEM
+%   Critérios: Modelagem (20%)
+% ============================================================================
+\begin{frame}{Modelagem — Ornstein-Uhlenbeck + CDD $\to$ Produtividade}
+
+  \textbf{Processo de temperatura:}
+  $\displaystyle dT(t) = \theta (\mu - T(t)) dt + \sigma dW(t)$
+  \hfill Meia-vida: \destaque{3,2--3,6 dias}
+
+  \vspace{0.15cm}
+  \textbf{CDD (Cooling Degree Days):}
+  $\displaystyle \text{CDD} = \sum_{\text{DEZ-FEV}} \max(0, T_{\text{média}} - 25^\circ\text{C})$
+
+  \vspace{0.15cm}
+  \textbf{Perda de produtividade (piecewise):}
+  $\displaystyle Y = Y_{\max} \times \bigl[1 - \min\bigl(\gamma \cdot \max(0, \text{CDD} - K_{\text{prod}}),\, \text{perda}_{\max}\bigr)\bigr]$
+
+  \vspace{0.2cm}
+  \begin{table}
+    \small
+    \begin{tabular}{lcccccc}
+      \toprule
+      \textbf{Região} & $\theta$ & $\sigma$ & $\gamma$ & $K_{\text{prod}}$ & $R^2_{\text{prod}}$ & $R^2_{\text{OU}}$ \\
+      \midrule
+      Sorriso/MT   & 0,192 & 1,02 & 0,0036 & 30,9 & \destaque{0,81} & 0,68 \\
+      Londrina/PR  & 0,214 & 1,64 & 0,0045 & 33,6 & 0,70 & 0,65 \\
+      Rio Verde/GO & 0,197 & 1,21 & 0,0052 & 27,7 & 0,75 & 0,67 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.1cm}
+  \begin{columns}
+    \column{0.48\textwidth}
+      \includegraphics[width=\textwidth]{grafico/14_calibracao_produtividade_v2.png}
+    \column{0.48\textwidth}
+      \includegraphics[width=\textwidth]{grafico/07_cdd_historico_v2.png}
+  \end{columns}
+  \vspace{-0.1cm}
+  {\tiny Calibração OU: MLE com 16.071 obs. (1980--2025). Produtividade: IBGE vs CDD (1980--2025).}
+
+\end{frame}
+
+% ============================================================================
+% SLIDE 3 — BACKTEST + RESULTADOS
+%   Critérios: Backtest (15%), Resultados (15%)
+% ============================================================================
+\begin{frame}{Backtest Walk-Forward \& Resultados}
+
+  \textbf{Metodologia:} Para cada safra (1985--2025), recalibra OU com janela
+  expansiva $\to$ precifica opção via Monte Carlo (20k trajetórias) $\to$
+  testa hedge contra CDD real.
+
+  \vspace{0.15cm}
+  \begin{columns}
+    \column{0.55\textwidth}
+      \includegraphics[width=\textwidth]{grafico/17_backtest_timeseries.png}
+      {\tiny Receita física (cinza) vs hedgeada (cor) — backtest walk-forward.}
+    \column{0.42\textwidth}
+      \small
+      \begin{table}
+        \begin{tabular}{lccc}
+          \toprule
+          \textbf{Métrica} & \textbf{MT} & \textbf{PR} & \textbf{GO} \\
+          \midrule
+          Efetiv. hist. & 83,1\% & 86,1\% & 65,1\% \\
+          Hit rate      & 71\%   & 63\%   & 60\%   \\
+          Prêmio médio  & R\$610k & R\$732k & R\$402k \\
+          Payout ratio  & 1,14$\times$ & 1,21$\times$ & 0,81$\times$ \\
+          $\sigma$ física & R\$3,2M & R\$2,9M & R\$2,5M \\
+          $\sigma$ hedge    & R\$1,1M & R\$1,2M & R\$1,4M \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+      {\tiny K ótimo: MT=10, PR=25, GO=25. Nocional: MT=R\$20k, PR=R\$30k, GO=R\$20k}
+  \end{columns}
+
+  \vspace{0.1cm}
+  \begin{columns}
+    \column{0.55\textwidth}
+      \includegraphics[width=\textwidth]{grafico/11_hedge_distrib_v2.png}
+    \column{0.42\textwidth}
+      \includegraphics[width=\textwidth]{grafico/18_backtest_payoffs.png}
+  \end{columns}
+
+\end{frame}
+
+% ============================================================================
+% SLIDE 4 — OTIMIZAÇÃO + TESE
+%   Critérios: Resultados (15%), Conceito
+% ============================================================================
+\begin{frame}{Otimização \& Tese de Investimento}
+
+  \begin{columns}
+    \column{0.55\textwidth}
+      \includegraphics[width=\textwidth]{grafico/12_sensibilidade_hedge_v2.png}
+      {\tiny Grid search: efetividade $\times$ strike $K$ $\times$ nocional. Estrela = ótimo.}
+    \column{0.42\textwidth}
+      \small
+      \begin{table}
+        \begin{tabular}{lcc}
+          \toprule
+          \textbf{Param. ótimos} & $K$ & Nocional \\
+          \midrule
+          Sorriso/MT    & 10   & R\$20k \\
+          Londrina/PR   & 25   & R\$30k \\
+          Rio Verde/GO  & 25   & R\$20k \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \begin{columns}
+    \column{0.32\textwidth}
+      \centering
+      \large $\star$ \textbf{Sorriso/MT} \\[0.1cm]
+      \small RECOMENDADO \\ $R^2=0,81$, $\gamma=0,0036$ \\
+      Efetiv. 83,1\% \\ Prêmio 7,3\%
+    \column{0.32\textwidth}
+      \centering
+      \large $\star$ \textbf{Londrina/PR} \\[0.1cm]
+      \small RECOMENDADO \\ $\sigma=1,64$, maior vol. \\
+      Efetiv. \destaque{86,1\%} \\ Prêmio 8,7\%
+    \column{0.32\textwidth}
+      \centering
+      \large $\triangle$ \textbf{Rio Verde/GO} \\[0.1cm]
+      \small CAUTELA \\ $\gamma=0,0052$ (abrupto) \\
+      Efetiv. 65,1\% \\ Hedge complementar
+  \end{columns}
+
+  \vspace{0.2cm}
+  \begin{columns}
+    \column{0.48\textwidth}
+      \includegraphics[width=\textwidth]{grafico/20_comparativo_seguro.png}
+    \column{0.48\textwidth}
+      \small
+      \textbf{Benchmark:}
+      \begin{itemize}
+        \item Prêmio CDD: \positivo{7,3--8,7\%} do valor segurado
+        \item Seguro agrícola: 10--15\%, inadimplência $\geq$ 30\%
+        \item Liquidação objetiva (temperatura) — zero risco moral
+      \end{itemize}
+  \end{columns}
+
+\end{frame}
+
+% ============================================================================
+% SLIDE 5 — CONCLUSÃO + IA + PRÓXIMOS PASSOS
+%   Critérios: Conclusão (10%), IA (15%)
+% ============================================================================
+\begin{frame}{Conclusão, Uso de IA \& Próximos Passos}
+
+  \begin{columns}
+    \column{0.48\textwidth}
+      \textbf{Conclusões}
+      \begin{itemize}
+        \item CDD options são \destaque{hedge viável} para soja brasileira
+        \item Efetividade de \positivo{83--86\%} em MT e PR
+        \item Prêmio de 7,3--8,7\% vs 10--15\% do seguro agrícola
+        \item Rio Verde/GO requer hedge complementar (efetiv. 65\%)
+      \end{itemize}
+
+      \vspace{0.3cm}
+      \textbf{Limitações}
+      \begin{itemize}
+        \item $R^2$ produtividade: 0,70--0,81 (19--30\% não explicado)
+        \item Apenas temperatura — não inclui precipitação
+        \item Dados IBGE anuais limitam calibração do modelo físico
+      \end{itemize}
+
+    \column{0.48\textwidth}
+      \textbf{Uso de Inteligência Artificial}
+      \begin{enumerate}
+        \item \textbf{Geração de código:} scripts do pipeline (download, OU,
+          precificação, hedge) gerados e depurados com auxílio de LLM
+        \item \textbf{Otimização de parâmetros:} grid search (K $\times$
+          nocional) guiado por análise de sensibilidade automatizada
+        \item \textbf{Design visual:} paleta de cores, layout dos gráficos
+          e diagramas conceituais gerados com IA
+        \item \textbf{Documentação:} relatório e apresentação formatados
+          com assistência de IA
+      \end{enumerate}
+  \end{columns}
+
+  \vspace{0.25cm}
+  \textbf{Próximos Passos}
+  \begin{columns}
+    \column{0.32\textwidth}
+      \small Incluir precipitação \\ como segunda fonte \\ de estresse
+    \column{0.32\textwidth}
+      \small Portfólio \\ multi-região \\ (diversificação)
+    \column{0.33\textwidth}
+      \small Estruturar produto \\ OTC para \\ comercialização
+  \end{columns}
+
+  \vspace{0.15cm}
+  \begin{center}
+    \small
+    \heatguard \,— Protegendo a safra brasileira do estresse térmico.
+  \end{center}
+
+\end{frame}
+
+\end{document}
