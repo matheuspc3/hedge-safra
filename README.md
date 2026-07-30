@@ -24,6 +24,9 @@ tradicional (10–15% de prêmio, 30%+ de inadimplência no Proagro).
 segurado e tem inadimplência de 30%+ no Proagro. CDD options têm liquidação
 objetiva (temperatura, não perícia), eliminando risco moral.
 
+![CDD histórico — estresse térmico acumulado em DEZ-FEV nas 3 regiões](output/graficos/07_cdd_historico_v2.png)
+*CDD acumulado (DEZ-FEV) para Sorriso/MT, Londrina/PR e Rio Verde/GO. Barras: CDD anual. Linha tracejada: média histórica. Linha vermelha: tendência linear. A tendência de alta no CDD reforça a necessidade de hedge climático.*
+
 ---
 
 ## Pipeline
@@ -211,6 +214,9 @@ Y = Y_max × (1 - Perda)
 | Londrina/PR | 0,0045 | 33,6 | 36,1% | 0,70 |
 | Rio Verde/GO | 0,0052 | 27,7 | 44,7% | 0,75 |
 
+![Calibração produtividade vs. CDD — scatter + curva exponencial com bandas de confiança](output/graficos/14_calibracao_produtividade_v2.png)
+*Produtividade observada (pontos) vs. modelo exponencial (linha preta) com banda de ±1σ (área sombreada). Sorriso/MT apresenta o maior R² (0,81) e a perda mais gradual (γ = 0,0036).*
+
 ### Precificação: Monte Carlo
 
 Opção de venda digital com barreira, precificada via Monte Carlo com 50.000
@@ -239,6 +245,9 @@ Resultados **otimizados** (grid search K × nocional):
 | Londrina/PR | 25 | R$ 30k | **86,1%** | 8,7% | R$ 8,0M | R$ 7,5M |
 | Rio Verde/GO | 25 | R$ 20k | 65,1% | 4,8% | R$ 8,0M | R$ 7,8M |
 
+![Distribuição da receita — antes vs. depois do hedge](output/graficos/11_hedge_distrib_v2.png)
+*Distribuição da receita líquida sem hedge (cinza) e com hedge CDD (colorido por região). A redução no desvio-padrão é de 76–83% para Sorriso e Londrina, transformando o perfil de risco do produtor.*
+
 ### Tese de Investimento
 
 1. **Sorriso/MT — RECOMENDADO:** R² mais alto (0,81), γ mais baixo (0,0036),
@@ -250,6 +259,9 @@ Resultados **otimizados** (grid search K × nocional):
 
 3. **Rio Verde/GO — CAUTELA:** Efetividade marginal (65,1%). γ alto (0,0052)
    indica perda abrupta por CDD. Necessário hedge complementar.
+
+![Sensibilidade do hedge — efetividade × strike K × nocional](output/graficos/12_sensibilidade_hedge_v2.png)
+*Grid search sobre K e nocional. Cada ponto é uma configuração; a estrela marca o ponto ótimo. Londrina/PR atinge 86,1% de efetividade com K=25 e nocional de R$ 30k. Sorriso/MT chega a 83,1% com K=10 e R$ 20k.*
 
 ---
 
