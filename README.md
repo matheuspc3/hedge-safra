@@ -176,11 +176,13 @@ Calibrado via **MLE** com 16.071 observações diárias (1980–2025) por regiã
 Meia-vida de **3,2–3,6 dias** — choques térmicos se dissipam rapidamente.
 
 <p align="center">
-  <img src="output/graficos/05_ou_sorriso_mt.png" alt="OU — Sorriso/MT" width="48%">
-  <img src="output/graficos/05_ou_londrina_pr.png" alt="OU — Londrina/PR" width="48%">
+  <img src="output/graficos/05_ou_sorriso_mt.png" alt="OU — Sorriso/MT" width="90%">
   <br>
-  <img src="output/graficos/05_ou_rio verde_go.png" alt="OU — Rio Verde/GO" width="48%">
-  <img src="output/graficos/06_residuos_ou_sorriso_mt.png" alt="Resíduos OU — Sorriso/MT" width="48%">
+  <img src="output/graficos/05_ou_londrina_pr.png" alt="OU — Londrina/PR" width="90%">
+  <br>
+  <img src="output/graficos/05_ou_rio verde_go.png" alt="OU — Rio Verde/GO" width="90%">
+  <br>
+  <img src="output/graficos/06_residuos_ou_sorriso_mt.png" alt="Resíduos OU — Sorriso/MT" width="90%">
   <br>
   <em>Processo OU calibrado e resíduos para as 3 regiões</em>
 </p>
@@ -259,11 +261,13 @@ Opção CDD precificada via Monte Carlo com 20.000–50.000 trajetórias e
 discretização exata do processo OU.
 
 <p align="center">
-  <img src="output/graficos/10_caminhos_temp_sorriso_mt.png" alt="Trajetórias OU — Sorriso" width="48%">
-  <img src="output/graficos/10_caminhos_temp_londrina_pr.png" alt="Trajetórias OU — Londrina" width="48%">
+  <img src="output/graficos/10_caminhos_temp_sorriso_mt.png" alt="Trajetórias OU — Sorriso" width="90%">
   <br>
-  <img src="output/graficos/09_precificacao_sorriso_mt.png" alt="Precificação — Sorriso" width="48%">
-  <img src="output/graficos/09_precificacao_londrina_pr.png" alt="Precificação — Londrina" width="48%">
+  <img src="output/graficos/10_caminhos_temp_londrina_pr.png" alt="Trajetórias OU — Londrina" width="90%">
+  <br>
+  <img src="output/graficos/09_precificacao_sorriso_mt.png" alt="Precificação — Sorriso" width="90%">
+  <br>
+  <img src="output/graficos/09_precificacao_londrina_pr.png" alt="Precificação — Londrina" width="90%">
   <br>
   <em>Trajetórias Monte Carlo (esq.) e distribuição dos payoffs (dir.)</em>
 </p>
@@ -271,23 +275,25 @@ discretização exata do processo OU.
 ### Tese de Investimento
 
 <p align="center">
-  <img src="output/graficos/19_diagrama_cdd.png" alt="Diagrama CDD Option" width="80%">
+  <img src="output/graficos/19_diagrama_cdd.png" alt="Diagrama CDD Option" width="90%">
   <br>
   <em>Fluxo conceitual de uma operação de hedge com CDD option</em>
 </p>
 
 <p align="center">
-  <img src="output/graficos/11_hedge_distrib_v2.png" alt="Distribuição Hedge" width="48%">
-  <img src="output/graficos/12_sensibilidade_hedge_v2.png" alt="Sensibilidade Hedge" width="48%">
+  <img src="output/graficos/11_hedge_distrib_v2.png" alt="Distribuição Hedge" width="90%">
   <br>
-  <img src="output/graficos/13_curvas_efetividade_sorriso_mt.png" alt="Efetividade — Sorriso" width="48%">
-  <img src="output/graficos/13_curvas_efetividade_londrina_pr.png" alt="Efetividade — Londrina" width="48%">
+  <img src="output/graficos/12_sensibilidade_hedge_v2.png" alt="Sensibilidade Hedge" width="90%">
+  <br>
+  <img src="output/graficos/13_curvas_efetividade_sorriso_mt.png" alt="Efetividade — Sorriso" width="90%">
+  <br>
+  <img src="output/graficos/13_curvas_efetividade_londrina_pr.png" alt="Efetividade — Londrina" width="90%">
   <br>
   <em>Distribuição do hedge, análise de sensibilidade e curvas de efetividade</em>
 </p>
 
 <p align="center">
-  <img src="output/graficos/20_comparativo_seguro.png" alt="CDD vs Seguro Agrícola" width="80%">
+  <img src="output/graficos/20_comparativo_seguro.png" alt="CDD vs Seguro Agrícola" width="90%">
   <br>
   <em>Comparativo: prêmio de CDD option vs seguro agrícola tradicional</em>
 </p>
@@ -326,7 +332,7 @@ discretização exata do processo OU.
 - Gerado por `python scripts/gerar_logo.py`
 
 <p align="center">
-  <img src="output/graficos/heatguard_paleta.png" alt="Paleta HEATGUARD" width="60%">
+  <img src="output/graficos/heatguard_paleta.png" alt="Paleta HEATGUARD" width="90%">
   <br>
   <em>Paleta de cores HEATGUARD</em>
 </p>
