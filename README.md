@@ -1,102 +1,94 @@
-# Derivativos Climáticos para Hedge de Produtividade da Soja
+# HEATGUARD — Derivativos Climáticos para Hedge de Produtividade da Soja
 
-Modelagem, precificação e simulação de estratégias de hedge com **opções CDD**
-(*Cooling Degree Days*) sobre a produtividade da soja em 3 regiões do Brasil.
+HEAT (calor, CDD) + GUARD (proteção). Modelagem, precificação, **backtest
+walk-forward** e hedge com **opções CDD** (*Cooling Degree Days*) sobre a
+produtividade da soja em 3 regiões do Brasil.
 
-**Tese:** CDD options são hedge viável para soja brasileira, com efetividade de
-**83–86%** em 2 das 3 principais regiões e prêmio médio de **5–9%** do valor
-segurado — comparável a derivativos de commodities e superior ao seguro agrícola
-tradicional (10–15% de prêmio, 30%+ de inadimplência no Proagro).
+Projeto submetido ao **Desafio Quant AI** — apresentação de 5 slides (16:9),
+pipeline completo de dados à precificação, com backtesting histórico.
 
 ---
 
 ## Resultados Principais
 
-| Região | Efetividade | Prêmio | K ótimo | R² prod. | Volatilidade OU |
-|--------|-------------|--------|---------|-----------|-----------------|
-| **Sorriso/MT** ★ | **83,1%** | 7,3% | 10 °C·dia | 0,81 | 1,02 |
-| **Londrina/PR** ★ | **86,1%** | 8,7% | 25 °C·dia | 0,70 | 1,64 |
-| **Rio Verde/GO** ⚠ | 65,1% | 4,8% | 25 °C·dia | 0,75 | 1,21 |
+| Região | Efetiv. BT | Efetiv. MC | Prêmio | K ótimo | R² prod. | σ OU |
+|--------|-----------|-----------|--------|---------|-----------|------|
+| **Sorriso/MT** ★ | **77,6%** | 83,1% | 7,3% | 10 °C·dia | 0,81 | 1,02 |
+| **Londrina/PR** ★ | **84,3%** | 86,1% | 8,7% | 25 °C·dia | 0,70 | 1,64 |
+| **Rio Verde/GO** ⚠ | 64,2% | 65,1% | 4,8% | 25 °C·dia | 0,75 | 1,21 |
 
 ★ Recomendado · ⚠ Cautela (hedge complementar necessário)
 
-**Benchmark:** prêmio de 7,3–8,7% vs. seguro agrícola que custa 10–15% do valor
-segurado e tem inadimplência de 30%+ no Proagro. CDD options têm liquidação
-objetiva (temperatura, não perícia), eliminando risco moral.
-
-![CDD histórico — estresse térmico acumulado em DEZ-FEV nas 3 regiões](output/graficos/07_cdd_historico_v2.png)
-*CDD acumulado (DEZ-FEV) para Sorriso/MT, Londrina/PR e Rio Verde/GO. Barras: CDD anual. Linha tracejada: média histórica. Linha vermelha: tendência linear. A tendência de alta no CDD reforça a necessidade de hedge climático.*
+**Benchmark:** prêmio de 7,3–8,7% vs. seguro agrícola (Proagro) que custa
+10–15% e tem inadimplência de 30%+. CDD options liquidam por temperatura —
+zero risco moral, zero perícia.
 
 ---
 
 ## Pipeline
 
 ```
-download_dados.py   → NASA POWER (1980–2025, 3 regiões)
+download_dados.py        → NASA POWER (1980–2025, 3 regiões)
        ↓
-modelagem_ou.py     → Ornstein-Uhlenbeck MLE (R² ~65–68%)
+modelagem_ou.py          → Ornstein-Uhlenbeck MLE (R² ~65–68%)
        ↓
-clima_produtividade.py → CDD → produtividade (R² 0,70–0,81)
+clima_produtividade.py   → CDD → produtividade (R² 0,70–0,81)
        ↓
-precificacao.py      → Monte Carlo 50k trajetórias → prêmio justo
+precificacao.py          → Monte Carlo 50k trajetórias → prêmio
        ↓
-hedge_simulacao.py   → 50k cenários → efetividade + VaR
+hedge_simulacao.py       → 50k cenários → efetividade + VaR
        ↓
-sensibilidade.py     → grid search (K × nocional) → otimização
+sensibilidade.py         → grid search (K × nocional) → otimização
+       ↓
+backtest_hedge.py        → Walk-forward 40 safras → efet. histórica
 ```
-
-Cada script em `scripts/` corresponde a um notebook em `notebooks/`.
 
 ---
 
 ## Estrutura
 
 ```
-├── scripts/                        # Pipeline executável (Python puro)
+├── scripts/                        # Pipeline executável (Python)
 │   ├── download_dados.py           # Coleta NASA POWER → parquet
-│   ├── modelagem_ou.py             # OU + MLE → parâmetros + resíduos
+│   ├── modelagem_ou.py             # OU + MLE → parâmetros
 │   ├── clima_produtividade.py      # Função clima→produtividade
 │   ├── precificacao.py             # Monte Carlo → prêmio justo
 │   ├── hedge_simulacao.py          # Hedge + métricas de risco
 │   ├── sensibilidade.py            # Grid search K × nocional
 │   ├── calibrar_produtividade.py   # Calibração γ, K, perda máxima
-│   └── regraficos_profissionais.py # Regenera gráficos com estilo Itaú
+│   ├── regraficos_profissionais.py # Regenera gráficos profissionais
+│   ├── backtest_hedge.py           # Walk-forward backtest (NOVO)
+│   ├── gerar_logo.py               # Identidade visual HEATGUARD
+│   └── graficos_backtest.py        # Gráficos do backtest
 │
 ├── notebooks/
 │   └── 01_exploracao_dados.ipynb   # EDA inicial
 │
 ├── src/
 │   ├── __init__.py
-│   └── plot_utils.py               # Estilo profissional (Itaú-inspired)
+│   └── plot_utils.py               # Estilo profissional
 │
 ├── data/
 │   ├── raw/                        # Cache NASA POWER (parquet)
-│   └── processed/                  # Parâmetros calibrados + simulações
-│       ├── temperatura_diaria_MT_PR_GO.parquet
-│       ├── parametros_ou.json
-│       ├── parametros_produtividade.json
-│       ├── precificacao_cdd.json
-│       ├── hedge_simulacao.json
-│       └── sensibilidade_hedge.json
+│   └── processed/                  # Parâmetros + backtest
 │
-├── output/graficos/                # 30+ figuras (300 dpi, formato publicação)
-│   ├── 05_ou_*.png                 # Termograma OU (3 regiões)
-│   ├── 06_residuos_ou_*.png        # Resíduos + Q-Q plot
-│   ├── 07_cdd_historico_v2.png     # Série histórica CDD (DEZ-FEV)
-│   ├── 08_produtividade_cdd.png    # Produtividade vs CDD
-│   ├── 09_precificacao_*.png       # Distribuição de payoff
-│   ├── 10_caminhos_temp_*.png      # Caminhos Monte Carlo
-│   ├── 11_hedge_distrib_v2.png     # Receita antes/depois do hedge
-│   ├── 12_sensibilidade_hedge_v2.png # Heatmap efetividade × K × nocional
-│   ├── 13_curvas_efetividade_*.png # Curvas de efetividade
-│   ├── 14_calibracao_produtividade_v2.png # Scatter + curva exponencial
-│   └── 15_comparacao_params.png    # Parâmetros por região
+├── output/graficos/                # Figuras (300 dpi, 16:9)
+│   ├── heatguard_logo.png          # Logo HEATGUARD
+│   ├── heatguard_paleta.png        # Paleta de cores
+│   ├── 17_backtest_timeseries.png  # Série temporal física vs hedge
+│   ├── 18_backtest_payoffs.png     # Payoffs históricos
+│   ├── 19_diagrama_cdd.png         # Fluxo conceitual CDD option
+│   ├── 20_comparativo_seguro.png   # Seguro vs CDD option
+│   └── *_v2.png                    # Gráficos profissionais
 │
-├── relatorio/                      # Relatório LaTeX (formato publicação)
-│   ├── main.tex                    # 10 seções, Palatino/Latin Modern
-│   ├── main.pdf                    # PDF compilado
-│   └── Makefile                    # make → pdflatex
+├── relatorio/
+│   ├── apresentacao.tex            # Beamer 16:9 · 5 slides (NOVO)
+│   ├── apresentacao.pdf            # PDF compilado
+│   ├── main.tex                    # Relatório completo (legado)
+│   ├── grafico/ → ../output/graficos/
+│   └── Makefile
 │
+├── run.sh                          # Pipeline completo (1 comando)
 ├── pyproject.toml
 └── README.md
 ```
@@ -107,22 +99,27 @@ Cada script em `scripts/` corresponde a um notebook em `notebooks/`.
 
 ```bash
 pip install -e .
-```
-
-Ou com uv:
-
-```bash
+# ou
 uv sync
 ```
 
 **Dependências:** Python ≥ 3.11, numpy, pandas, scipy, matplotlib, seaborn,
-requests, jupyter, pyarrow, tqdm.
+requests, jupyter, pyarrow, tqdm. **LaTeX:** texlive-core (pdflatex) para
+compilar a apresentação.
 
 ---
 
 ## Uso
 
-### Pipeline completo (script a script)
+### Pipeline completo (1 comando)
+
+```bash
+bash run.sh
+```
+
+Executa em sequência: backtest → logo → gráficos → compilação LaTeX.
+
+### Passo a passo
 
 ```bash
 # 1. Download dos dados climáticos (NASA POWER)
@@ -142,33 +139,24 @@ python scripts/hedge_simulacao.py
 
 # 6. Análise de sensibilidade
 python scripts/sensibilidade.py
+
+# 7. Backtest walk-forward (40 safras)
+python scripts/backtest_hedge.py
+
+# 8. Gerar identidade visual
+python scripts/gerar_logo.py
+
+# 9. Gráficos do backtest
+python scripts/graficos_backtest.py
 ```
 
-### Notebooks
-
-```bash
-cd notebooks
-jupyter notebook 01_exploracao_dados.ipynb
-```
-
-Ou abrir diretamente no VS Code.
-
-### Regenerar gráficos com estilo profissional
-
-```bash
-python scripts/regraficos_profissionais.py
-```
-
-Gera 4 gráficos _v2 em `output/graficos/` com paleta Itaú, anotações
-estilizadas e 300 dpi.
-
-### Compilar relatório
+### Compilar apresentação
 
 ```bash
 cd relatorio && make
+# ou
+cd relatorio && pdflatex apresentacao.tex && pdflatex apresentacao.tex
 ```
-
-Requer texlive-core + lmodern (pdflatex).
 
 ---
 
@@ -176,126 +164,94 @@ Requer texlive-core + lmodern (pdflatex).
 
 ### Modelo de Temperatura: Ornstein-Uhlenbeck
 
-A temperatura diária é modelada como um processo de reversão à média:
-
 ```
 dT(t) = θ(μ - T(t))dt + σdW(t)
 ```
 
-Calibrado via **MLE** com 16.071 observações diárias (1980–2025) por região:
+Calibrado via **MLE** com 16.071 observações diárias (1980–2025) por região.
+Meia-vida de **3,2–3,6 dias** — choques térmicos se dissipam rapidamente.
 
-| Região | θ (rev.) | μ (drift) | σ (vol.) | Meia-vida | R² |
-|--------|----------|-----------|----------|-----------|----|
-| Sorriso/MT | 0,192 | 0,0002 | 1,02 | 3,6 dias | 0,68 |
-| Londrina/PR | 0,214 | 0,0005 | 1,64 | 3,2 dias | 0,65 |
-| Rio Verde/GO | 0,197 | 0,0001 | 1,21 | 3,5 dias | 0,67 |
-
-A meia-vida de **3,2–3,6 dias** significa que choques térmicos se dissipam
-rapidamente — o prêmio de risco temporal é curto.
+| Região | θ (rev.) | σ (vol.) | Meia-vida | R² OU |
+|--------|----------|---------|-----------|-------|
+| Sorriso/MT | 0,192 | 1,02 | 3,6 dias | 0,68 |
+| Londrina/PR | 0,214 | 1,64 | 3,2 dias | 0,65 |
+| Rio Verde/GO | 0,197 | 1,21 | 3,5 dias | 0,67 |
 
 ### CDD e Perda de Produtividade
 
-**CDD** (Cooling Degree Days) acumulado em DEZ-FEV:
+**CDD** = Σ max(0, T_média - 25 °C) em DEZ-FEV
 
-```
-CDD = Σ max(0, T_média - 25 °C)
-```
-
-Perda de produtividade modelada como função piecewise:
-
-```
-Perda = min(max(0, γ · (CDD - K)), perda_máxima)
-Y = Y_max × (1 - Perda)
-```
+Perda = min(max(0, γ · (CDD - K_prod)), perda_máxima)
 
 | Região | γ | K (°C·dia) | perda_máx | R² |
 |--------|---|------------|-----------|----|
-| Sorriso/MT | 0,0036 | 30,9 | 40,5% | 0,81 |
+| Sorriso/MT | 0,0036 | 30,9 | 40,5% | **0,81** |
 | Londrina/PR | 0,0045 | 33,6 | 36,1% | 0,70 |
 | Rio Verde/GO | 0,0052 | 27,7 | 44,7% | 0,75 |
 
-![Calibração produtividade vs. CDD — scatter + curva exponencial com bandas de confiança](output/graficos/14_calibracao_produtividade_v2.png)
-*Produtividade observada (pontos) vs. modelo exponencial (linha preta) com banda de ±1σ (área sombreada). Sorriso/MT apresenta o maior R² (0,81) e a perda mais gradual (γ = 0,0036).*
+### Backtest Walk-Forward
+
+Para cada safra de 1985 a 2024 (40 safras):
+
+1. Recalibra OU com janela expansiva de todos os anos anteriores
+2. Precifica opção CDD via Monte Carlo (20k trajetórias)
+3. Testa hedge contra CDD real observado naquela safra
+4. Calcula: prêmio pago, payoff recebido, receita física vs hedgeada
+
+**Resultados do backtest vs Monte Carlo prospectivo:**
+
+| Região | Efetiv. BT | Efetiv. MC | Diferença | Hit Rate |
+|--------|-----------|-----------|-----------|----------|
+| Londrina/PR | **84,3%** | 86,1% | -1,9% | 42,5% |
+| Sorriso/MT | **77,6%** | 83,1% | -5,5% | 45,0% |
+| Rio Verde/GO | **64,2%** | 65,1% | -0,9% | 32,5% |
+
+O backtest confirma as conclusões do Monte Carlo: MT e PR com efetividade
+sólida, GO requer hedge complementar.
 
 ### Precificação: Monte Carlo
 
-Opção de venda digital com barreira, precificada via Monte Carlo com 50.000
-trajetórias e discretização exata do processo OU:
-
-- **Strike:** K = 30,9 °C·dia
-- **Nocional:** R$ 30.000 / ponto de CDD
-- **Prob. de exercício:** 65–71% (opção bem no dinheiro)
-
-| Região | Prêmio justo | CDD médio sim. | P95 CDD |
-|--------|-------------|----------------|---------|
-| Sorriso/MT | R$ 418.881 | 41,9 | 82,6 |
-| Londrina/PR | R$ 604.451 | 49,0 | 100,6 |
-| Rio Verde/GO | R$ 481.212 | 44,3 | 89,1 |
-
-### Simulação de Hedge
-
-Produtor com 1.000 ha, 60 sacas/ha, preço R$ 140/saca. 50.000 cenários de
-temperatura → produtividade → receita.
-
-Resultados **otimizados** (grid search K × nocional):
-
-| Região | K ótimo | Nocional | Efetividade | Prêmio | VaR95 (s/ hedge) | VaR95 (c/ hedge) |
-|--------|---------|----------|-------------|--------|------------------|------------------|
-| Sorriso/MT | 10 | R$ 20k | **83,1%** | 7,3% | R$ 8,0M | R$ 7,5M |
-| Londrina/PR | 25 | R$ 30k | **86,1%** | 8,7% | R$ 8,0M | R$ 7,5M |
-| Rio Verde/GO | 25 | R$ 20k | 65,1% | 4,8% | R$ 8,0M | R$ 7,8M |
-
-![Distribuição da receita — antes vs. depois do hedge](output/graficos/11_hedge_distrib_v2.png)
-*Distribuição da receita líquida sem hedge (cinza) e com hedge CDD (colorido por região). A redução no desvio-padrão é de 76–83% para Sorriso e Londrina, transformando o perfil de risco do produtor.*
+Opção CDD precificada via Monte Carlo com 20.000–50.000 trajetórias e
+discretização exata do processo OU.
 
 ### Tese de Investimento
 
-1. **Sorriso/MT — RECOMENDADO:** R² mais alto (0,81), γ mais baixo (0,0036),
-   meia-vida 3,6 dias. Estruturável como produto OTC.
+1. **Sorriso/MT — RECOMENDADO:** R² mais alto (0,81), γ mais baixo (0,0036).
+   Efetividade backtest de 77,6%. Estruturável como produto OTC.
 
-2. **Londrina/PR — RECOMENDADO:** Maior efetividade (86,1%). Prêmio mais alto
-   (8,7%) justificado pela maior volatilidade (σ = 1,64). Ideal para produtores
-   que já usam hedge de preço.
+2. **Londrina/PR — RECOMENDADO:** Maior efetividade (84,3% BT, 86,1% MC).
+   Prêmio mais alto (8,7%) justificado pela maior volatilidade (σ = 1,64).
 
-3. **Rio Verde/GO — CAUTELA:** Efetividade marginal (65,1%). γ alto (0,0052)
+3. **Rio Verde/GO — CAUTELA:** Efetividade marginal (64,2%). γ alto (0,0052)
    indica perda abrupta por CDD. Necessário hedge complementar.
-
-![Sensibilidade do hedge — efetividade × strike K × nocional](output/graficos/12_sensibilidade_hedge_v2.png)
-*Grid search sobre K e nocional. Cada ponto é uma configuração; a estrela marca o ponto ótimo. Londrina/PR atinge 86,1% de efetividade com K=25 e nocional de R$ 30k. Sorriso/MT chega a 83,1% com K=10 e R$ 20k.*
 
 ---
 
 ## Dados
 
-- **Fonte:** [NASA POWER](https://power.larc.nasa.gov/) — grade 0,5°×0,5°,
-  dados diários de temperatura máxima, mínima e precipitação
+- **Fonte:** [NASA POWER](https://power.larc.nasa.gov/) — grade 0,5°×0,5°
 - **Período:** 1980–2025 (46 safras)
-- **Período crítico:** Dezembro–Fevereiro (DEZ-FEV), enchimento de grãos
-- **Regiões:**
-  | Região | Latitude | Longitude | Estado |
-  |--------|----------|-----------|--------|
-  | Sorriso | 12,55°S | 55,71°O | MT |
-  | Londrina | 23,31°S | 51,16°O | PR |
-  | Rio Verde | 17,80°S | 50,93°O | GO |
-- **Cache local:** `data/raw/nasa_power_raw.parquet` para evitar limites de taxa
+- **Período crítico:** Dezembro–Fevereiro (DEZ-FEV)
+- **Cache local:** `data/raw/nasa_power_raw.parquet`
+
+| Região | Latitude | Longitude | Estado |
+|--------|----------|-----------|--------|
+| Sorriso | 12,55°S | 55,71°O | MT |
+| Londrina | 23,31°S | 51,16°O | PR |
+| Rio Verde | 17,80°S | 50,93°O | GO |
 
 ---
 
-## Gráficos
+## Identidade Visual — HEATGUARD
 
-Os gráficos seguem estilo inspirado em **Bloomberg / Itaú BBA**, gerados com
-`src/plot_utils.py`:
-
-- Paleta: azul institucional (#005CA9), verde retorno (#00995D),
-  vermelho (#CC3333), fundo bege (#F7F3EB)
-- 300 dpi, formato PNG
-- Grid limpo (somente eixo Y), fonte sempre creditada
-- Anotações estilizadas com setas e fundo branco
-
-Os arquivos `*_v2.png` são a versão mais recente com layout profissional.
+- **Logo:** Termômetro (laranja) + espiga de soja (verde) sobre fundo bege
+- **Paleta:** Azul Hedge (#003057), Verde Soja (#2E8B57), Laranja Alerta (#E8751A)
+- **Tagline:** "Protegendo a safra brasileira do estresse térmico"
+- Gerado por `python scripts/gerar_logo.py`
 
 ---
 
 ## Licença
 
-Projeto acadêmico. Dados NASA POWER de uso livre mediante atribuição.
+Projeto acadêmico — Desafio Quant AI. Dados NASA POWER de uso livre mediante
+atribuição.
