@@ -1,0 +1,675 @@
+% =============================================================================
+%  RELATÓRIO DE INVESTIMENTO — Derivativos Climáticos para Hedge de Soja
+%  Desafio de Análise Quantitativa | Itaú BBA
+%  Compilação: pdflatex → pdflatex
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacotes essenciais ----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}                % Latin Modern (Computer Modern escalável)
+\usepackage{amssymb,amsmath}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm,
+  marginparwidth=0cm,
+  headheight=24pt,
+  headsep=12pt
+}
+
+% --- Cores (lobo) ----------------------------------------------------------
+\usepackage[table]{xcolor}
+\definecolor{wolf_blue}{RGB}{0,51,102}
+\definecolor{wolf_green}{RGB}{85,170,85}
+\definecolor{wolf_gray}{gray}{0.15}
+\colorlet{wolf_lightblue}{wolf_blue!6}
+\colorlet{wolf_lightgreen}{wolf_green!10}
+
+% --- Gráficos --------------------------------------------------------------
+\usepackage{graphicx}
+\graphicspath{{grafico/}}
+\newcommand{\grafico}[2][width=\textwidth]{%
+  \begin{figure}[htbp]
+    \centering\includegraphics[#1]{#2}
+  \end{figure}%
+}
+
+% --- Tabelas ---------------------------------------------------------------
+\usepackage{booktabs,array}
+\usepackage{caption}
+\captionsetup[table]{position=top,skip=3pt,font={small,bf},labelfont=bf}
+\renewcommand{\arraystretch}{1.15}
+
+% --- Links -----------------------------------------------------------------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=wolf_blue,
+  urlcolor=wolf_blue,
+  citecolor=wolf_blue
+}
+
+% --- Cabeçalho / Rodapé ----------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{wolf_blue}{\small Derivativos Climáticos --- Hedge de Soja}}
+\fancyhead[R]{\textcolor{wolf_blue}{\small Itaú BBA}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{wolf_blue}\leaders\hrule height 0.4pt\hfill}}
+
+% --- Listas compactas ------------------------------------------------------
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.5em}
+
+% --- Títulos de seção ------------------------------------------------------
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries\color{wolf_blue}}{}{0em}{}[\vspace{-0.3em}\textcolor{wolf_green}{\rule{\textwidth}{0.6pt}}]
+\titleformat{\subsection}{\large\bfseries\color{wolf_blue!80!black}}{}{0em}{}
+
+% --- Destaques -------------------------------------------------------------
+\newcommand{\destaque}[1]{\textcolor{wolf_blue}{\textbf{#1}}}
+\newcommand{\melhordestaque}[1]{\textcolor{wolf_green!50!black}{\textbf{#1}}}
+
+% --- Comandos para exibir dados --------------------------------------------
+\newcommand{\exibit}[3]{%
+  \begin{tabular}{@{}l r@{}}%
+    \textbf{#1} & \textcolor{wolf_blue}{#2} \\%
+    \multicolumn{2}{@{}p{\textwidth}}{\footnotesize #3}%
+  \end{tabular}%
+}
+\newcommand{\exibtitulo}[1]{{\small\bfseries\color{wolf_gray}#1}}
+\newcommand{\exibcusto}[1]{{\footnotesize (#1)}}
+
+% =============================================================================
+%  CAPA
+% =============================================================================
+\begin{document}
+
+\pagenumbering{gobble}
+\begin{titlepage}
+\color{white}
+\pagecolor{wolf_blue}
+\begin{center}
+\vspace*{4cm}
+{\Huge\bfseries Derivados Climáticos\\[0.3em]
+para Hedge da Safra de Soja}
+
+\vspace{1.5cm}
+{\Large Uma tese de investimento em\\[0.2em]
+proteção de risco agrícola via CDD}
+
+\vspace{3cm}
+{\large Relatório de Análise Quantitativa}
+
+\vspace{0.5cm}
+{\large Itaú BBA | 2025}
+
+\vfill
+{\small\itshape
+Sorriso/MT \quad$\bullet$\quad Londrina/PR \quad$\bullet$\quad Rio Verde/GO}
+\end{center}
+\end{titlepage}
+\nopagecolor
+\pagenumbering{arabic}
+
+% =============================================================================
+%  SUMÁRIO EXECUTIVO
+% =============================================================================
+\section{Sumário Executivo}
+
+Este relatório apresenta a estruturação e precificação de um derivativo climático
+baseado em \destaque{CDD (Cooling Degree Days)} como instrumento de hedge para o
+produtor de soja brasileiro. A tese central é que opções sobre temperatura
+oferecem proteção contra perda de produtividade por estresse térmico, com
+liquidação objetiva (temperatura medida) e prêmio inferior ao seguro agrícola
+tradicional.
+
+\begin{table}[htbp]
+\centering
+\caption{Resultados consolidados por região}
+\label{tab:resumo}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{\textbf{Efetiv.}} &
+\textcolor{white}{\textbf{Prêmio}} &
+\textcolor{white}{\textbf{Custo}} &
+\textcolor{white}{\textbf{VaR hedge}} \\
+\midrule
+\rowcolor{wolf_lightblue}
+\textbf{Sorriso/MT} & \textbf{83,1\%} & R\$ 418.881 & 7,3\% & R\$ 7.508.146 \\
+\rowcolor{wolf_lightblue}
+\textbf{Londrina/PR} & \textbf{86,1\%} & R\$ 604.451 & 8,7\% & R\$ 7.540.937 \\
+\rowcolor{wolf_lightblue}
+\textbf{Rio Verde/GO} & \textbf{65,1\%} & R\$ 481.212 & 4,8\% & R\$ 7.811.655 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent
+A efetividade do hedge atinge \destaque{83--86\%} em duas das três principais
+regiões produtoras, com prêmio entre \destaque{4,8\% e 8,7\%} do valor segurado.
+O custo é competitivo frente ao seguro agrícola tradicional (10--15\% no Brasil)
+e a liquidação objetiva elimina risco moral.
+
+\section{O Problema: Risco Climático na Soja Brasileira}
+
+\subsection*{Exposição do produtor}
+O produtor de soja brasileiro opera com margens apertadas e exposição
+climática integral. O estresse térmico durante o período crítico da safra
+(DEZ--FEV) pode reduzir a produtividade em \destaque{30\% ou mais}, conforme
+documentado por Schlenker \& Roberts (2009). Temperaturas acima de 30\,°C na
+floração e enchimento de grãos aceleram a maturação e reduzem o peso final.
+
+\subsection*{Limitações do seguro agrícola}
+O seguro agrícola tradicional no Brasil enfrenta problemas estruturais:
+\begin{itemize}
+  \item Prêmio elevado (10--15\% do valor segurado)
+  \item Inadimplência de \destaque{30\%+} no Proagro
+  \item Dependência de subsídio público
+  \item Perícia subjetiva --- risco moral elevado
+  \item Cobertura limitada a \textasciitilde20\% da área plantada
+\end{itemize}
+Derivativos climáticos resolvem esses problemas: liquidação objetiva (temperatura
+é pública e verificável), sem risco moral, sem subsídio, sem perícia.
+
+\grafico[width=0.85\textwidth]{07_cdd_historico_v2.png}
+
+\section{Dados e Metodologia}
+
+\subsection*{Fonte de dados}
+Utilizamos dados diários da \destaque{NASA POWER} (1980--2025, 46 safras) para
+temperatura máxima, mínima e precipitação em 3 regiões:
+
+\begin{itemize}
+  \item \destaque{Sorriso/MT} (12,55\,°S, 55,71\,°O) --- Cerrado, expansão recente
+  \item \destaque{Londrina/PR} (23,31\,°S, 51,16\,°O) --- Sul, tradicional
+  \item \destaque{Rio Verde/GO} (17,80\,°S, 50,93\,°O) --- Centro-Oeste
+\end{itemize}
+
+\subsection*{Período crítico}
+Para a soja, definimos DEZ--FEV como período crítico (floração e enchimento
+de grãos). O CDD é calculado como:
+\[
+\text{CDD} = \sum_{d\in\text{DEZ--FEV}} \max(T_{\text{média},d} - 28, 0)
+\]
+
+\begin{table}[htbp]
+\centering
+\caption{Estatísticas descritivas --- CDD DEZ-FEV (1980--2025)}
+\label{tab:descritivas}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{\textbf{Média}} &
+\textcolor{white}{\textbf{Mediana}} &
+\textcolor{white}{\textbf{Desv.\ pad.}} &
+\textcolor{white}{\textbf{Mín.}} &
+\textcolor{white}{\textbf{Máx.}} &
+\textcolor{white}{\textbf{Tendência}} \\
+\midrule
+Sorriso/MT   & 15,40 & 14,28 & 12,72 & 0,38 & 60,59 & +0,32\,°C/déc \\
+Londrina/PR  & 16,70 & 14,79 & 15,19 & 0,87 & 79,58 & +0,38\,°C/déc \\
+Rio Verde/GO & 17,57 & 15,93 & 13,93 & 0,29 & 62,80 & +0,18\,°C/déc \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Modelagem da Temperatura: Ornstein-Uhlenbeck}
+
+Modelamos a temperatura diária média como um processo de reversão à média
+(Ornstein-Uhlenbeck), calibrado por máxima verossimilhança (MLE) com 16.071
+observações diárias:
+
+\[
+dT_t = \theta(\mu - T_t)\,dt + \sigma\,dW_t
+\]
+
+Onde:
+\begin{itemize}
+  \item $\theta$ = velocidade de reversão (meia-vida $= \ln 2 / \theta$)
+  \item $\mu$ = nível de reversão de longo prazo
+  \item $\sigma$ = volatilidade
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Parâmetros OU calibrados (1980--2025)}
+\label{tab:ou}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{$\bm{\theta}$} &
+\textcolor{white}{$\bm{\mu}$} &
+\textcolor{white}{$\bm{\sigma}$} &
+\textcolor{white}{\textbf{Meia-vida}} &
+\textcolor{white}{$R^2$} &
+\textcolor{white}{$\bm{\beta}$} \\
+\midrule
+Sorriso/MT   & 0,192 & 0,0002 & 1,017 & 3,6\,d & 0,681 & 0,825 \\
+Londrina/PR  & 0,214 & 0,0005 & 1,643 & 3,2\,d & 0,652 & 0,807 \\
+Rio Verde/GO & 0,197 & 0,0001 & 1,210 & 3,5\,d & 0,674 & 0,821 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Insight de investimento}
+A meia-vida de 3,2--3,6 dias significa que choques térmicos se dissipam em
+cerca de 4--5 dias. Isso define a escala temporal do prêmio de risco: opções
+com períodos de acumulação mais longos (DEZ--FEV = 90 dias) têm exposição
+a múltiplos choques independentes, o que reduz a volatilidade do payoff.
+
+
+\section{Função Produtividade vs. CDD}
+
+Para traduzir impacto climático em risco de receita, calibramos uma função
+produtividade vs. CDD contra dados da \destaque{Pesquisa Agrícola Municipal
+(IBGE, 1980--2025)}, totalizando 135 observações (45 safras $\times$ 3 regiões):
+
+\[
+Y = \alpha + \gamma \cdot \max(K - \text{CDD}, 0) + \varepsilon
+\]
+
+Onde $\gamma$ é a sensibilidade da produtividade ao CDD\@ e $K$ é o strike
+biológico (CDD a partir do qual a perda começa).
+
+\begin{table}[htbp]
+\centering
+\caption{Calibração da função produtividade}
+\label{tab:prod}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{$\bm{\alpha}$} &
+\textcolor{white}{$\bm{\gamma}$} &
+\textcolor{white}{$\bm{K}$} &
+\textcolor{white}{$R^2$} &
+\textcolor{white}{\textbf{p-valor ($\gamma$)}} &
+\textcolor{white}{\textbf{Obs.}} \\
+\midrule
+Sorriso/MT   & 57,13 & 0,0036 & 30,9 & 0,807 & $<0,001$ & 45 \\
+Londrina/PR  & 56,01 & 0,0045 & 30,9 & 0,733 & $<0,001$ & 45 \\
+Rio Verde/GO & 56,79 & 0,0052 & 30,9 & 0,700 & $<0,001$ & 45 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\grafico[width=0.85\textwidth]{14_calibracao_produtividade_v2.png}
+\grafico[width=0.80\textwidth]{15_comparacao_params.png}
+
+\subsection*{Insight de investimento}
+Sorriso/MT tem o maior $R^2$ (0,81), indicando que o CDD explica 81\% da
+variância da produtividade. Isso significa que o hedge é \destaque{mais
+previsível} nessa região, justificando um prêmio menor e maior confiabilidade.
+
+
+\section{Precificação da Opção CDD}
+
+A opção é estruturada como um \destaque{put digital} com barreira:
+\[
+\text{Payoff} = \text{Nocional} \times \max(\text{CDD}_{\text{DEZ--FEV}} - K, 0)
+\]
+
+Precificada via Monte Carlo com 50.000 trajetórias, discretização exata do
+processo OU, strike $K = 30,9$ (calibrado) e nocional de R\$ 30.000/ponto.
+
+\begin{table}[htbp]
+\centering
+\caption{Precificação Monte Carlo (50.000 simulações)}
+\label{tab:precificacao}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{\textbf{Prêmio justo}} &
+\textcolor{white}{$P(\text{exercício})$} &
+\textcolor{white}{\textbf{CDD médio}} &
+\textcolor{white}{\textbf{Erro padrão}} \\
+\midrule
+Sorriso/MT   & R\$ 418.881 & 65,3\% & 41,94 & R\$ 2.315 \\
+Londrina/PR  & R\$ 604.451 & 71,5\% & 48,98 & R\$ 3.077 \\
+Rio Verde/GO & R\$ 481.212 & 67,3\% & 44,25 & R\$ 2.593 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Percentis da distribuição simulada de CDD}
+\label{tab:percentis}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{$p_5$} &
+\textcolor{white}{$p_{25}$} &
+\textcolor{white}{$p_{50}$} &
+\textcolor{white}{$p_{75}$} &
+\textcolor{white}{$p_{95}$} \\
+\midrule
+Sorriso/MT   & 12,2 & 25,7 & 38,8 & 54,6 & 82,6 \\
+Londrina/PR  & 12,6 & 28,6 & 44,6 & 64,5 & 100,6 \\
+Rio Verde/GO & 12,0 & 26,5 & 40,6 & 58,0 & 89,1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Insight de investimento}
+A probabilidade de exercício de 65--71\% indica que esta \destaque{não é uma
+opção de cauda}: o hedge protege contra eventos frequentes, não apenas
+catástrofes. O custo do prêmio reflete essa alta probabilidade.
+
+
+\section{Simulação de Hedge}
+
+Simulamos 50.000 cenários para um produtor com \destaque{1.000~ha}, produtividade
+base de 60~sacas/ha e preço de R\$~140/saca.
+
+\grafico[width=\textwidth]{11_hedge_distrib_v2.png}
+
+\begin{table}[htbp]
+\centering
+\caption{Resultados da simulação de hedge (configuração não-otimizada)}
+\label{tab:hedge}
+\footnotesize
+\begin{tabular}{lccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Métrica}} &
+\textcolor{white}{\textbf{Sorriso/MT}} &
+\textcolor{white}{\textbf{Londrina/PR}} &
+\textcolor{white}{\textbf{Rio Verde/GO}} \\
+\midrule
+Receita média física   & R\$ 8.032.685 & R\$ 8.101.624 & R\$ 8.189.563 \\
+Receita média hedgeada & R\$ 7.990.771 & R\$ 7.748.266 & R\$ 7.980.744 \\
+$\sigma$ física        & R\$ 898.836   & R\$ 790.112   & R\$ 716.649   \\
+$\sigma$ hedgeada      & R\$ 210.749   & R\$ 130.581   & R\$ 507.950   \\
+VaR 95\% físico        & R\$ 5.357.554 & R\$ 6.414.517 & R\$ 7.674.164 \\
+VaR 95\% hedgeado      & R\$ 7.775.558 & R\$ 7.491.864 & R\$ 7.837.496 \\
+Receita mínima física  & R\$ 4.998.000 & R\$ 4.998.000 & R\$ 4.998.000 \\
+Receita mínima hedgeada& R\$ 7.650.088 & R\$ 7.109.695 & R\$ 7.768.014 \\
+\rowcolor{wolf_lightgreen}
+\textbf{Efetividade}   & \textbf{76,6\%} & \textbf{83,5\%} & \textbf{29,1\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Insight de investimento}
+Reduzir o desvio padrão da receita de R\$ 899~mil para R\$ 211~mil (Sorriso)
+ou de R\$ 790~mil para R\$ 131~mil (Londrina) \destaque{transforma} o perfil
+de risco do produtor. A receita mínima hedgeada sobe de R\$ 5~milhões para
+R\$ 7,6~milhões --- um piso efetivo.
+
+\subsection*{Por que Rio Verde é pior}
+O $\gamma$ mais alto (0,0052) indica que a produtividade cai mais abruptamente
+com o aumento do CDD\@. Além disso, o processo OU tem menor volatilidade, o que
+faz o hedge perder sincronia com o risco físico.
+
+
+\section{Otimização do Hedge}
+
+Realizamos busca em grade sobre o par (strike $K$, nocional por ponto) para
+maximizar a efetividade.
+
+\begin{table}[htbp]
+\centering
+\caption{Resultados otimizados por região}
+\label{tab:otimizado}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{$K$} &
+\textcolor{white}{\textbf{Nocional}} &
+\textcolor{white}{\textbf{Efetividade}} &
+\textcolor{white}{\textbf{Custo}} \\
+\midrule
+\rowcolor{wolf_lightgreen}
+\textbf{Sorriso/MT} & \textbf{10} & \textbf{R\$ 20.000} & \textbf{83,1\%} & \textbf{7,26\%} \\
+& 5  & R\$ 20.000 & 82,5\% & 8,37\% \\
+& 15 & R\$ 20.000 & 82,0\% & 6,19\% \\
+\midrule
+\rowcolor{wolf_lightgreen}
+\textbf{Londrina/PR} & \textbf{25} & \textbf{R\$ 30.000} & \textbf{86,1\%} & \textbf{8,72\%} \\
+& 30 & R\$ 30.000 & 84,4\% & 7,42\% \\
+& 35 & R\$ 40.000 & 82,0\% & 8,32\% \\
+\midrule
+\rowcolor{wolf_lightgreen}
+\textbf{Rio Verde/GO} & \textbf{25} & \textbf{R\$ 20.000} & \textbf{65,1\%} & \textbf{4,79\%} \\
+& 20 & R\$ 20.000 & 64,7\% & 5,71\% \\
+& 30 & R\$ 20.000 & 64,4\% & 3,96\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\grafico[width=0.85\textwidth]{12_sensibilidade_hedge_v2.png}
+
+\subsection*{Insight de investimento}
+O strike ótimo ($K = 10$--25) é \melhordestaque{menor} que o strike biológico
+($K = 30,9$). Isso significa que o hedge começa a pagar \destaque{antes} da
+perda de produtividade, funcionando como proteção por precaução
+(\emph{precautionary hedge}). O custo adicional do prêmio ($\approx 7,3\%$)
+pode ser visto como um seguro de margem, não apenas de produtividade.
+
+
+\section{Tese de Investimento}
+
+\subsection*{O produto}
+Opção de venda digital sobre CDD acumulado em DEZ--FEV, strike $K = 30,9$,
+nocional de R\$ 20.000--30.000 por ponto de CDD\@. Liquidação objetiva via
+temperatura medida por estação meteorológica de referência.
+
+\subsection*{Recomendações}
+
+\paragraph{Sorriso/MT --- \destaque{RECOMENDADO}}
+Melhor relação risco-retorno. Maior $R^2$ (0,81), $\gamma$ mais baixo (0,0036),
+meia-vida de 3,6 dias. Efetividade otimizada de 83,1\% com prêmio de 7,3\%.
+Performance comparável a opções de soja em Chicago. Pode ser estruturado como
+produto de balcão (OTC) lastreado em CDD\@.
+
+\paragraph{Londrina/PR --- \destaque{RECOMENDADO}}
+Maior efetividade do portfólio (86,1\%). Prêmio de 8,7\% justificado pela maior
+volatilidade ($\sigma = 1,64$) e probabilidade de exercício (71,5\%). Ideal
+para produtores que já usam hedge de preço e querem proteger a margem completa.
+
+\paragraph{Rio Verde/GO --- \destaque{CAUTELA}}
+Efetividade marginal de 65,1\% após otimização. O $\gamma$ mais alto (0,0052)
+indica que a temperatura afeta a produtividade mais drasticamente, e o OU
+menos responsivo (meia-vida 3,5 dias) torna o hedge menos sincronizado.
+Requer hedge complementar ou estrutura diferente.
+
+\subsection*{Benchmark competitivo}
+
+\begin{table}[htbp]
+\centering
+\caption{Comparação: CDD option vs. seguro agrícola}
+\label{tab:benchmark}
+\small
+\begin{tabular}{lccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Característica}} &
+\textcolor{white}{\textbf{CDD option}} &
+\textcolor{white}{\textbf{Seguro agrícola}} &
+\textcolor{white}{\textbf{Vantagem}} \\
+\midrule
+Custo (prêmio)   & 4,8--8,7\% & 10--15\% & CDD \\
+Liquidação       & Objetiva (temp.) & Perícia & CDD \\
+Risco moral      & Zero & Alto & CDD \\
+Subsídio público & Não & Sim & CDD \\
+Cobertura        & Evento específico & Multirrisco & Seguro \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Limitações e Riscos}
+
+\begin{enumerate}
+  \item \destaque{Risco de base:} CDD não captura todos os fatores que afetam
+  produtividade (pragas, déficit hídrico, manejo). O $R^2$ de 0,70--0,81
+  significa que 19--30\% da variância não é explicada.
+  \item \destaque{Ilíquidez:} O mercado de derivativos climáticos no Brasil é
+  incipiente. Poucos DMA (\emph{Designated Market Authorities}) e baixa
+  profundidade.
+  \item \destaque{Re-hedge anual:} A opção cobre uma safra. O produtor precisa
+  recomprar todo ano, com prêmio potencialmente diferente.
+  \item \destaque{Clima não-estacionário:} Parâmetros calibrados com 44 anos de
+  dados históricos. Mudanças climáticas podem alterar a distribuição futura
+  de CDD\@.
+  \item \destaque{Risco de funding:} O prêmio é pago upfront. Produtores com
+  capital de giro limitado podem precisar de financiamento embutido.
+\end{enumerate}
+
+\noindent
+\melhordestaque{Mas a alternativa é não fazer nada} --- e o produtor já tem
+100\% de exposição sem hedge.
+
+
+\section{Conclusão}
+
+Opções de CDD sobre temperatura em DEZ--FEV são um \destaque{instrumento de
+hedge efetivo e defensável} para a soja brasileira. Com efetividade de
+83--86\% em duas das três principais regiões e prêmio competitivo
+(4,8--8,7\%), o produto pode ser estruturado como solução OTC para
+produtores, complementar ao hedge de preço via B3.
+
+\subsection*{Próximos passos}
+
+\begin{itemize}
+  \item Incluir precipitação (CDD + SPI) para capturar estresse hídrico
+  \item Portfólio multi-região com diversificação geográfica
+  \item Estrutura de funding: prêmio financiado contra a safra
+  \item Backtest com safras históricas (validação fora da amostra)
+  \item Colocação via plataforma de agronegócio do Itaú BBA
+\end{itemize}
+
+\noindent
+O Itaú BBA tem a base de clientes agrícolas, o balanço e a capacidade de
+estruturação para liderar esse mercado no Brasil. Precisa do modelo.
+
+
+% =============================================================================
+%  APÊNDICE
+% =============================================================================
+\appendix
+
+\section{Tabelas Completas}
+
+\subsection*{A.1 Precificação --- Distribuição Simulada de CDD}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrrr}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{\textbf{Média}} &
+\textcolor{white}{\textbf{Mediana}} &
+\textcolor{white}{$\bm{\sigma}$} &
+\textcolor{white}{$\bm{p_5}$} &
+\textcolor{white}{$\bm{p_{95}}$} \\
+\midrule
+Sorriso/MT   & 41,94 & 38,85 & 21,83 & 12,2 & 82,6 \\
+Londrina/PR  & 48,98 & 44,63 & 27,38 & 12,6 & 100,6 \\
+Rio Verde/GO & 44,25 & 40,63 & 23,92 & 12,0 & 89,1 \\
+\bottomrule
+\end{tabular}
+
+\subsection*{A.2 Simulação de Hedge --- Resultados Completos}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccccccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{\textbf{Rec. física}} &
+\textcolor{white}{\textbf{Rec. hedge}} &
+\textcolor{white}{$\bm{\sigma}$ físico} &
+\textcolor{white}{$\bm{\sigma}$ hedge} &
+\textcolor{white}{\textbf{VaR físico}} &
+\textcolor{white}{\textbf{VaR hedge}} &
+\textcolor{white}{\textbf{Efet.}} \\
+\midrule
+Sorriso/MT   & R\$ 8,03M & R\$ 7,99M & R\$ 899K & R\$ 211K & R\$ 5,36M & R\$ 7,78M & 76,6\% \\
+Londrina/PR  & R\$ 8,10M & R\$ 7,75M & R\$ 790K & R\$ 131K & R\$ 6,41M & R\$ 7,49M & 83,5\% \\
+Rio Verde/GO & R\$ 8,19M & R\$ 7,98M & R\$ 717K & R\$ 508K & R\$ 7,67M & R\$ 7,84M & 29,1\% \\
+\bottomrule
+\end{tabular}
+
+\subsection*{A.3 Sensibilidade --- Top 5 por Região (otimizado)}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{wolf_blue}\textcolor{white}{\textbf{Região}} &
+\textcolor{white}{$K$} &
+\textcolor{white}{\textbf{Nocional}} &
+\textcolor{white}{\textbf{Efetividade}} &
+\textcolor{white}{\textbf{Custo}} \\
+\midrule
+\rowcolor{wolf_lightgreen}\textbf{Sorriso/MT (melhor)} & \textbf{10} & \textbf{R\$ 20.000} & \textbf{83,1\%} & \textbf{7,26\%} \\
+Sorriso/MT &  5 & R\$ 20.000 & 82,5\% & 8,37\% \\
+Sorriso/MT & 15 & R\$ 20.000 & 82,0\% & 6,19\% \\
+Sorriso/MT &  0 & R\$ 20.000 & 81,7\% & 9,51\% \\
+Sorriso/MT & 20 & R\$ 20.000 & 79,5\% & 5,19\% \\
+\midrule
+\rowcolor{wolf_lightgreen}\textbf{Londrina/PR (melhor)} & \textbf{25} & \textbf{R\$ 30.000} & \textbf{86,1\%} & \textbf{8,72\%} \\
+Londrina/PR & 30 & R\$ 30.000 & 84,4\% & 7,42\% \\
+Londrina/PR & 35 & R\$ 40.000 & 82,0\% & 8,32\% \\
+Londrina/PR & 40 & R\$ 40.000 & 79,8\% & 6,94\% \\
+Londrina/PR & 30 & R\$ 40.000 & 78,9\% & 9,89\% \\
+\midrule
+\rowcolor{wolf_lightgreen}\textbf{Rio Verde/GO (melhor)} & \textbf{25} & \textbf{R\$ 20.000} & \textbf{65,1\%} & \textbf{4,79\%} \\
+Rio Verde/GO & 20 & R\$ 20.000 & 64,7\% & 5,71\% \\
+Rio Verde/GO & 30 & R\$ 20.000 & 64,4\% & 3,96\% \\
+Rio Verde/GO & 15 & R\$ 20.000 & 63,2\% & 6,72\% \\
+Rio Verde/GO & 35 & R\$ 20.000 & 62,8\% & 3,23\% \\
+\bottomrule
+\end{tabular}
+
+
+% =============================================================================
+%  REFERÊNCIAS
+% =============================================================================
+\clearpage
+\begin{thebibliography}{9}
+
+\bibitem{schlenker2009}
+Schlenker, W.\ \& Roberts, M.\ J.\ (2009).
+\textit{Nonlinear temperature effects indicate severe damages to U.S. crop
+yields under climate change}. Proceedings of the National Academy of Sciences,
+106(37), 15594--15598.
+
+\bibitem{rattalino2017}
+Rattalino Edreira, J.\ I.\ et al.\ (2017).
+\textit{Assessing causes of yield gaps in agricultural areas with diversity in
+climate and soils}. Agricultural and Forest Meteorology, 247, 170--180.
+
+\bibitem{alaton2002}
+Alaton, P., Djehiche, B.\ \& Stillberger, D.\ (2002).
+\textit{On modelling and pricing of temperature derivatives}. Applied
+Mathematical Finance, 9(1), 1--22.
+
+\bibitem{jewson2005}
+Jewson, S.\ \& Brix, A.\ (2005).
+\textit{Weather Derivative Valuation}. Cambridge University Press.
+
+\bibitem{conab2024}
+CONAB (2024).
+\textit{Acompanhamento da Safra Brasileira --- Grãos}. Safra 2024/2025.
+
+\bibitem{ibge2024}
+IBGE (2024).
+\textit{Pesquisa Agrícola Municipal --- Tabela 1612}. Sistema IBGE de
+Recuperação Automática (SIDRA).
+
+\end{thebibliography}
+
+\end{document}
