@@ -9,6 +9,10 @@ pipeline completo de dados à precificação, com backtesting histórico.
 
 ---
 
+<p align="center">
+  <img src="output/graficos/heatguard_logo.png" alt="HEATGUARD Logo" width="400">
+</p>
+
 ## Resultados Principais
 
 | Região | Efetiv. BT | Efetiv. MC | Prêmio | K ótimo | R² prod. | σ OU |
@@ -171,6 +175,16 @@ dT(t) = θ(μ - T(t))dt + σdW(t)
 Calibrado via **MLE** com 16.071 observações diárias (1980–2025) por região.
 Meia-vida de **3,2–3,6 dias** — choques térmicos se dissipam rapidamente.
 
+<p align="center">
+  <img src="output/graficos/05_ou_sorriso_mt.png" alt="OU — Sorriso/MT" width="48%">
+  <img src="output/graficos/05_ou_londrina_pr.png" alt="OU — Londrina/PR" width="48%">
+  <br>
+  <img src="output/graficos/05_ou_rio verde_go.png" alt="OU — Rio Verde/GO" width="48%">
+  <img src="output/graficos/06_residuos_ou_sorriso_mt.png" alt="Resíduos OU — Sorriso/MT" width="48%">
+  <br>
+  <em>Processo OU calibrado e resíduos para as 3 regiões</em>
+</p>
+
 | Região | θ (rev.) | σ (vol.) | Meia-vida | R² OU |
 |--------|----------|---------|-----------|-------|
 | Sorriso/MT | 0,192 | 1,02 | 3,6 dias | 0,68 |
@@ -182,6 +196,24 @@ Meia-vida de **3,2–3,6 dias** — choques térmicos se dissipam rapidamente.
 **CDD** = Σ max(0, T_média - 25 °C) em DEZ-FEV
 
 Perda = min(max(0, γ · (CDD - K_prod)), perda_máxima)
+
+<p align="center">
+  <img src="output/graficos/07_cdd_historico_v2.png" alt="CDD Histórico" width="80%">
+  <br>
+  <em>CDD acumulado em DEZ-FEV (1980–2025) — 3 regiões</em>
+</p>
+
+<p align="center">
+  <img src="output/graficos/08_produtividade_cdd.png" alt="Produtividade vs CDD" width="80%">
+  <br>
+  <em>Relação CDD × produtividade da soja com ajuste linear</em>
+</p>
+
+<p align="center">
+  <img src="output/graficos/14_calibracao_produtividade_v2.png" alt="Calibração produtividade" width="80%">
+  <br>
+  <em>Calibração da função perda de produtividade</em>
+</p>
 
 | Região | γ | K (°C·dia) | perda_máx | R² |
 |--------|---|------------|-----------|----|
@@ -197,6 +229,18 @@ Para cada safra de 1985 a 2024 (40 safras):
 2. Precifica opção CDD via Monte Carlo (20k trajetórias)
 3. Testa hedge contra CDD real observado naquela safra
 4. Calcula: prêmio pago, payoff recebido, receita física vs hedgeada
+
+<p align="center">
+  <img src="output/graficos/17_backtest_timeseries.png" alt="Backtest Timeseries" width="80%">
+  <br>
+  <em>Série temporal: receita física vs receita hedgeada — cada ponto é uma safra</em>
+</p>
+
+<p align="center">
+  <img src="output/graficos/18_backtest_payoffs.png" alt="Backtest Payoffs" width="80%">
+  <br>
+  <em>Payoffs históricos das opções CDD — prêmio pago vs indenização recebida</em>
+</p>
 
 **Resultados do backtest vs Monte Carlo prospectivo:**
 
@@ -214,7 +258,39 @@ sólida, GO requer hedge complementar.
 Opção CDD precificada via Monte Carlo com 20.000–50.000 trajetórias e
 discretização exata do processo OU.
 
+<p align="center">
+  <img src="output/graficos/10_caminhos_temp_sorriso_mt.png" alt="Trajetórias OU — Sorriso" width="48%">
+  <img src="output/graficos/10_caminhos_temp_londrina_pr.png" alt="Trajetórias OU — Londrina" width="48%">
+  <br>
+  <img src="output/graficos/09_precificacao_sorriso_mt.png" alt="Precificação — Sorriso" width="48%">
+  <img src="output/graficos/09_precificacao_londrina_pr.png" alt="Precificação — Londrina" width="48%">
+  <br>
+  <em>Trajetórias Monte Carlo (esq.) e distribuição dos payoffs (dir.)</em>
+</p>
+
 ### Tese de Investimento
+
+<p align="center">
+  <img src="output/graficos/19_diagrama_cdd.png" alt="Diagrama CDD Option" width="80%">
+  <br>
+  <em>Fluxo conceitual de uma operação de hedge com CDD option</em>
+</p>
+
+<p align="center">
+  <img src="output/graficos/11_hedge_distrib_v2.png" alt="Distribuição Hedge" width="48%">
+  <img src="output/graficos/12_sensibilidade_hedge_v2.png" alt="Sensibilidade Hedge" width="48%">
+  <br>
+  <img src="output/graficos/13_curvas_efetividade_sorriso_mt.png" alt="Efetividade — Sorriso" width="48%">
+  <img src="output/graficos/13_curvas_efetividade_londrina_pr.png" alt="Efetividade — Londrina" width="48%">
+  <br>
+  <em>Distribuição do hedge, análise de sensibilidade e curvas de efetividade</em>
+</p>
+
+<p align="center">
+  <img src="output/graficos/20_comparativo_seguro.png" alt="CDD vs Seguro Agrícola" width="80%">
+  <br>
+  <em>Comparativo: prêmio de CDD option vs seguro agrícola tradicional</em>
+</p>
 
 1. **Sorriso/MT — RECOMENDADO:** R² mais alto (0,81), γ mais baixo (0,0036).
    Efetividade backtest de 77,6%. Estruturável como produto OTC.
@@ -248,6 +324,12 @@ discretização exata do processo OU.
 - **Paleta:** Azul Hedge (#003057), Verde Soja (#2E8B57), Laranja Alerta (#E8751A)
 - **Tagline:** "Protegendo a safra brasileira do estresse térmico"
 - Gerado por `python scripts/gerar_logo.py`
+
+<p align="center">
+  <img src="output/graficos/heatguard_paleta.png" alt="Paleta HEATGUARD" width="60%">
+  <br>
+  <em>Paleta de cores HEATGUARD</em>
+</p>
 
 ---
 
